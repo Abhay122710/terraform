@@ -14,7 +14,7 @@ function ensureLegendEl(): HTMLElement {
     legendContainer.style.cssText = `
       position: fixed;
       bottom: 20px;
-      right: 320px;
+      right: 340px;
       z-index: 20;
       pointer-events: none;
       display: none;
@@ -27,7 +27,7 @@ function ensureLegendEl(): HTMLElement {
 export function updateLegend(mode: ViewMode): void {
   const container = ensureLegendEl();
 
-  if (mode === 'shaded' || mode === 'wireframe') {
+  if (mode === 'shaded' || mode === 'wireframe' || mode === 'debug-green') {
     container.style.display = 'none';
     return;
   }
@@ -39,12 +39,11 @@ export function updateLegend(mode: ViewMode): void {
   legendCanvas.width = 24;
   legendCanvas.height = 200;
   legendCanvas.style.borderRadius = '4px';
-  legendCanvas.style.border = '1px solid rgba(255,255,255,0.1)';
+  legendCanvas.style.border = '1px solid rgba(255,255,255,0.15)';
 
   const ctx = legendCanvas.getContext('2d')!;
 
   if (mode === 'slope') {
-    // Green → Yellow → Red (bottom to top)
     const grad = ctx.createLinearGradient(0, 200, 0, 0);
     grad.addColorStop(0, '#00ff00');
     grad.addColorStop(0.5, '#ffff00');
@@ -76,7 +75,6 @@ export function updateLegend(mode: ViewMode): void {
 
   container.appendChild(legendCanvas);
 
-  // Labels
   const labelsDiv = document.createElement('div');
   labelsDiv.style.cssText = 'font-size:10px;color:#aaa;margin-top:4px;text-align:center;font-family:monospace;';
 
@@ -90,4 +88,3 @@ export function updateLegend(mode: ViewMode): void {
 
   container.appendChild(labelsDiv);
 }
-

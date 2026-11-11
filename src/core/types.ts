@@ -6,7 +6,7 @@
 export type NoiseType = 'simplex' | 'perlin' | 'ridged' | 'billow' | 'voronoi';
 
 /** Analysis / rendering view modes */
-export type ViewMode = 'shaded' | 'slope' | 'height' | 'contour' | 'wireframe';
+export type ViewMode = 'shaded' | 'slope' | 'height' | 'contour' | 'wireframe' | 'debug-green';
 
 /** Colour palette presets */
 export type PalettePreset = 'mountain-reference' | 'alpine' | 'desert' | 'volcanic' | 'arctic';
@@ -135,19 +135,19 @@ export const DEFAULT_TERRAIN_PARAMS: TerrainParams = {
     persistence: 0.52,
   },
   shape: {
-    heightScale: 1.4,
-    redistributionPower: 1.15,
+    heightScale: 1.35,
+    redistributionPower: 1.1,
     plateauSteps: 0,
   },
   erosion: {
     smoothingPasses: 0,
-    hydraulicIterations: 300,
-    thermalIterations: 10,
+    hydraulicIterations: 200,
+    thermalIterations: 8,
   },
   detail: {
     enableDetail: true,
     detailStrength: 0.08,
-    ridgeSharpening: 1.25,
+    ridgeSharpening: 1.2,
     valleyDeepening: 0.15,
   },
   resolution: 128,
@@ -159,14 +159,14 @@ export const DEFAULT_TERRAIN_PARAMS: TerrainParams = {
 export const DEFAULT_LIGHT_PARAMS: LightParams = {
   azimuth: 140,
   elevation: 48,
-  intensity: 1.6,
+  intensity: 1.5,
   shadowEnabled: true,
-  fogDensity: 0.015,
+  fogDensity: 0.01,
 };
 
 export const DEFAULT_WATER_PARAMS: WaterParams = {
-  enabled: true,
-  level: 0.12,
+  enabled: false, // Disabled by default so terrain base and landscape are completely unobstructed
+  level: 0.08,
   opacity: 0.65,
 };
 

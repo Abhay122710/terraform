@@ -1,19 +1,19 @@
 /**
  * Terraform — Main entry point.
  * Complete 3D low-poly terrain generator from uploaded elevation maps,
- * grayscale heightmaps, and geographic heatmaps.
+ * grayscale heightmaps, and geographic heatmaps with clean outdoor lighting.
  */
 
 import * as THREE from 'three';
 import { createScene, resetCamera, SceneContext } from './scene/setup';
 import { createLighting, LightingContext } from './scene/lighting';
 import { buildTerrainGeometry } from './mesh/lowpoly';
+import { buildTerrainBaseSkirt } from './mesh/terrain-base';
 import { createWater, WaterContext } from './mesh/water';
 import { HeightField } from './core/heightfield';
 import {
   TERRAIN_SIZE,
   DEFAULT_TERRAIN_PARAMS,
-  DEFAULT_LIGHT_PARAMS,
   DEFAULT_WATER_PARAMS,
   WorkerRequest,
   WorkerResponse,
@@ -40,6 +40,7 @@ let sceneCtx: SceneContext;
 let lighting: LightingContext;
 let water: WaterContext;
 let terrainMesh: THREE.Mesh | null = null;
+let baseSkirtMesh: THREE.Mesh | null = null;
 let wireframeOverlay: THREE.LineSegments | null = null;
 let currentHeightfield: HeightField;
 let state: ToolbarState;
@@ -137,7 +138,7 @@ function init() {
     redo: doRedo,
   });
 
-  // Automatically load bundled sample heightmap if available, or generate mountainous terrain
+  // Automatically load bundled sample heightmap or generate sharp mountain range
   loadDefaultSample();
 
   // Render loop
@@ -218,6 +219,12 @@ function rebuildMesh() {
     terrainMesh.geometry.dispose();
     (terrainMesh.material as THREE.Material).dispose();
   }
+  if (baseSkirtMesh) {
+    sceneCtx.scene.remove(baseSkirtMesh);
+    baseSkirtMesh.geometry.dispose();
+    (baseSkirtMesh.material as THREE.Material).dispose();
+    baseSkirtMesh = null;
+  }
   if (wireframeOverlay) {
     sceneCtx.scene.remove(wireframeOverlay);
     wireframeOverlay.geometry.dispose();
@@ -237,11 +244,12 @@ function rebuildMesh() {
 
   applyColouring(geometry, heightScale);
 
+  // Clean, matte outdoor diffuse material (roughness: 0.9, metalness: 0.0)
   const material = new THREE.MeshStandardMaterial({
     vertexColors: true,
     flatShading: state.view.flatShading,
-    roughness: 0.82,
-    metalness: 0.08,
+    roughness: 0.9,
+    metalness: 0.0,
     side: THREE.FrontSide,
   });
 
@@ -249,6 +257,26 @@ function rebuildMesh() {
   terrainMesh.castShadow = true;
   terrainMesh.receiveShadow = true;
   sceneCtx.scene.add(terrainMesh);
+
+  // Solid perimeter base skirt to prevent floating appearance
+  if (state.view.showBase) {
+    const baseGeo = buildTerrainBaseSkirt(
+      currentHeightfield,
+      state.terrain.resolution,
+      heightScale,
+      0.8
+    );
+    const baseMat = new THREE.MeshStandardMaterial({
+      vertexColors: true,
+      flatShading: true,
+      roughness: 0.95,
+      metalness: 0.0,
+      side: THREE.FrontSide,
+    });
+    baseSkirtMesh = new THREE.Mesh(baseGeo, baseMat);
+    baseSkirtMesh.receiveShadow = true;
+    sceneCtx.scene.add(baseSkirtMesh);
+  }
 
   if (state.view.mode === 'wireframe') {
     addWireframeOverlay();
@@ -277,8 +305,8 @@ function addWireframeOverlay() {
   if (!terrainMesh) return;
   const wireGeo = new THREE.WireframeGeometry(terrainMesh.geometry);
   const wireMat = new THREE.LineBasicMaterial({
-    color: 0x000000,
-    opacity: 0.28,
+    color: 0x111111,
+    opacity: 0.25,
     transparent: true,
   });
   wireframeOverlay = new THREE.LineSegments(wireGeo, wireMat);
@@ -304,7 +332,7 @@ async function handleFileLoad(file: File) {
     loadedFileName = file.name;
     rawImageCache = result.rawImageData ?? null;
 
-    // By default when uploading a map: preserve exact map structure (blend = 0.0)
+    // When uploading a map: preserve exact map structure (blend = 0.0)
     state.terrain.blendFactor = 0.0;
     gui.controllersRecursive().forEach((c) => c.updateDisplay());
     showToast(`Loaded "${file.name}" (${result.width}×${result.height})`, false);

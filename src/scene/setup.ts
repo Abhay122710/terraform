@@ -1,5 +1,5 @@
 /**
- * Scene setup: renderer, camera, controls, resize handling.
+ * Scene setup: renderer, camera, controls, neutral aesthetic viewport, resize handling.
  */
 
 import * as THREE from 'three';
@@ -11,10 +11,18 @@ export interface SceneContext {
   camera: THREE.PerspectiveCamera;
   controls: OrbitControls;
   canvas: HTMLCanvasElement;
+  ambientLight: THREE.AmbientLight;
+  hemiLight: THREE.HemisphereLight;
 }
 
-const DEFAULT_CAMERA_POSITION = new THREE.Vector3(8, 6, 8);
-const DEFAULT_CAMERA_TARGET = new THREE.Vector3(0, 0, 0);
+// Elevated 3/4 perspective camera displaying the entire 12x12 terrain cleanly
+export const DEFAULT_CAMERA_POSITION = new THREE.Vector3(13, 11, 15);
+export const DEFAULT_CAMERA_TARGET = new THREE.Vector3(0, 0.5, 0);
+
+// Neutral, clear sky viewport background (#323846) providing sharp contrast against green & rock
+export const VIEWPORT_CLEAR_COLOR = 0x323846;
+export const SKY_HEMI_COLOR = 0xddeaff;
+export const GROUND_HEMI_COLOR = 0x727a68;
 
 export function createScene(container: HTMLElement): SceneContext {
   // Renderer
@@ -25,35 +33,38 @@ export function createScene(container: HTMLElement): SceneContext {
   });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(container.clientWidth, container.clientHeight);
-  renderer.setClearColor(0x1a1a2e, 1);
+  renderer.setClearColor(VIEWPORT_CLEAR_COLOR, 1.0);
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.0;
+  renderer.toneMappingExposure = 1.15;
   container.appendChild(renderer.domElement);
 
   // Scene
   const scene = new THREE.Scene();
-  scene.fog = new THREE.FogExp2(0x1a1a2e, 0.02);
+  scene.background = new THREE.Color(VIEWPORT_CLEAR_COLOR);
 
-  // Camera
+  // Atmospheric fog matching the viewport clear color
+  scene.fog = new THREE.FogExp2(VIEWPORT_CLEAR_COLOR, 0.01);
+
+  // Camera: elevated three-quarter view, 45 FOV, broad depth clipping
   const camera = new THREE.PerspectiveCamera(
-    50,
+    45,
     container.clientWidth / container.clientHeight,
-    0.1,
-    100
+    0.2,
+    200
   );
   camera.position.copy(DEFAULT_CAMERA_POSITION);
   camera.lookAt(DEFAULT_CAMERA_TARGET);
 
-  // Controls
+  // Controls: Orbit, Pan, Zoom with smooth damping
   const controls = new OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
-  controls.dampingFactor = 0.08;
+  controls.dampingFactor = 0.07;
   controls.target.copy(DEFAULT_CAMERA_TARGET);
-  controls.minDistance = 2;
-  controls.maxDistance = 30;
-  controls.maxPolarAngle = Math.PI * 0.85;
+  controls.minDistance = 3;
+  controls.maxDistance = 60;
+  controls.maxPolarAngle = Math.PI * 0.48; // Prevent camera flipping below ground
   controls.update();
 
   // Resize handler
@@ -66,21 +77,28 @@ export function createScene(container: HTMLElement): SceneContext {
   };
   window.addEventListener('resize', onResize);
 
-  // Ambient light (base)
-  const ambient = new THREE.AmbientLight(0x404060, 0.4);
-  scene.add(ambient);
+  // Ambient light: ensures all faces and shadows remain readable
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.45);
+  scene.add(ambientLight);
 
-  // Hemisphere light for natural outdoor feel
-  const hemi = new THREE.HemisphereLight(0x87ceeb, 0x444422, 0.3);
-  scene.add(hemi);
+  // Hemisphere light: natural sky dome light and ground bounce
+  const hemiLight = new THREE.HemisphereLight(SKY_HEMI_COLOR, GROUND_HEMI_COLOR, 0.55);
+  scene.add(hemiLight);
 
-  return { renderer, scene, camera, controls, canvas: renderer.domElement };
+  return {
+    renderer,
+    scene,
+    camera,
+    controls,
+    canvas: renderer.domElement,
+    ambientLight,
+    hemiLight,
+  };
 }
 
-/** Reset camera to default position */
+/** Reset camera to default three-quarter elevated perspective */
 export function resetCamera(ctx: SceneContext): void {
   ctx.camera.position.copy(DEFAULT_CAMERA_POSITION);
   ctx.controls.target.copy(DEFAULT_CAMERA_TARGET);
   ctx.controls.update();
 }
-

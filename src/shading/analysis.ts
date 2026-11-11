@@ -1,5 +1,5 @@
 /**
- * Analysis view colouring: slope heatmap, height heatmap, contour lines.
+ * Analysis view colouring: slope heatmap, height heatmap, contour lines, and diagnostic green.
  */
 
 import * as THREE from 'three';
@@ -20,11 +20,21 @@ export function applyAnalysisColours(
   maxY: number,
   contourInterval: number = 0.1
 ): void {
-  if (mode === 'shaded' || mode === 'wireframe') return; // handled elsewhere
+  if (mode === 'shaded' || mode === 'wireframe') return;
 
   const positions = geometry.getAttribute('position');
   const normals = geometry.getAttribute('normal');
   const colors = geometry.getAttribute('color');
+
+  // Diagnostic mode: solid bright natural green across all vertices to verify baseline lighting
+  if (mode === 'debug-green') {
+    const green = new THREE.Color(0x789b45);
+    for (let i = 0; i < colors.count; i++) {
+      colors.setXYZ(i, green.r, green.g, green.b);
+    }
+    colors.needsUpdate = true;
+    return;
+  }
 
   for (let i = 0; i < positions.count; i += 3) {
     const avgY = (positions.getY(i) + positions.getY(i + 1) + positions.getY(i + 2)) / 3;
@@ -59,7 +69,6 @@ export function applyAnalysisColours(
         break;
       }
       case 'contour': {
-        // Dark base with bright lines at height intervals
         const interval = contourInterval || 0.1;
         const mod = t % interval;
         const lineWidth = 0.008;
@@ -67,8 +76,7 @@ export function applyAnalysisColours(
         if (isContour) {
           tmpColor.setRGB(1, 1, 1);
         } else {
-          // Subtle height-based grey
-          const grey = 0.15 + t * 0.25;
+          const grey = 0.25 + t * 0.45;
           tmpColor.setRGB(grey, grey, grey);
         }
         break;
@@ -94,4 +102,3 @@ export function getFaceSlope(geometry: THREE.BufferGeometry, faceIndex: number):
   const angle = Math.acos(Math.min(1, Math.max(-1, tmpNormal.dot(up))));
   return (angle * 180) / Math.PI;
 }
-

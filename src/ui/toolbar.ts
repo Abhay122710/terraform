@@ -1,6 +1,6 @@
 /**
  * Toolbar: lil-gui panel with all terrain parameters.
- * Extended with Mountain Detail, Heatmap decoding modes, and elevation normalization.
+ * Extended with Mountain Detail, Heatmap decoding modes, elevation normalization, and Diagnostic Debug Mode.
  */
 
 import GUI from 'lil-gui';
@@ -28,6 +28,7 @@ export interface ToolbarState {
     contourInterval: number;
     flatShading: boolean;
     jitter: number;
+    showBase: boolean;
   };
   palette: string;
   steepnessThreshold: number;
@@ -46,6 +47,7 @@ export function getDefaultState(): ToolbarState {
       contourInterval: 0.1,
       flatShading: true,
       jitter: 0.12,
+      showBase: true,
     },
     palette: 'mountain-reference',
     steepnessThreshold: 38,
@@ -207,6 +209,10 @@ export function createToolbar(
     .add(state.view, 'jitter', 0, 0.6, 0.02)
     .name('Vertex Jitter')
     .onChange(callbacks.onMeshChange);
+  meshFolder
+    .add(state.view, 'showBase')
+    .name('Solid Base Skirt')
+    .onChange(callbacks.onMeshChange);
 
   // ─── Materials & Colours ───────────────────────────────────
   const colourFolder = gui.addFolder('🎨 Terrain Materials');
@@ -233,6 +239,7 @@ export function createToolbar(
     .add(state.water, 'opacity', 0, 1, 0.05)
     .name('Water Opacity')
     .onChange(callbacks.onWaterChange);
+  waterFolder.close();
 
   // ─── Light & Atmosphere ────────────────────────────────────
   const lightFolder = gui.addFolder('☀️ Sun & Atmosphere');
@@ -258,10 +265,17 @@ export function createToolbar(
     .onChange(callbacks.onLightChange);
   lightFolder.close();
 
-  // ─── View ──────────────────────────────────────────────────
-  const viewFolder = gui.addFolder('👁️ Analysis Views');
+  // ─── View & Diagnostic ─────────────────────────────────────
+  const viewFolder = gui.addFolder('👁️ Analysis & Debug Views');
   viewFolder
-    .add(state.view, 'mode', ['shaded', 'slope', 'height', 'contour', 'wireframe'] as ViewMode[])
+    .add(state.view, 'mode', [
+      'shaded',
+      'debug-green',
+      'slope',
+      'height',
+      'contour',
+      'wireframe',
+    ] as ViewMode[])
     .name('View Mode')
     .onChange(callbacks.onViewChange);
   viewFolder

@@ -2,6 +2,10 @@
  * Low-poly mesh builder.
  * Creates a non-indexed BufferGeometry from a HeightField with flat per-face normals.
  * Supports organic vertex jitter for stylized low-poly mountain peaks and ridges.
+ * 
+ * CRITICAL NORMAL CALCULATION:
+ * Triangle vertices must be ordered with Counter-Clockwise (CCW) winding when viewed from +Y
+ * so that cross product (edge1 x edge2) produces an outward, upward-facing normal (n.y > 0).
  */
 
 import * as THREE from 'three';
@@ -25,7 +29,7 @@ const DEFAULT_MESH_OPTIONS: MeshOptions = {
   segments: 128,
   heightScale: 2.5,
   flatShading: true,
-  jitter: 0.15,
+  jitter: 0.12,
   jitterSeed: 42,
 };
 
@@ -103,32 +107,37 @@ export function buildTerrainGeometry(
       const p11 = new THREE.Vector3(gridNodesX[i11], gridNodesY[i11], gridNodesZ[i11]);
 
       // Alternating diagonal triangulation for natural mountain slopes & ridgelines
+      // Both patterns are strictly CCW wound so outward normal points UP:
       const alternate = (gx + gy) % 2 === 1;
 
       let a1: THREE.Vector3, b1: THREE.Vector3, c1: THREE.Vector3;
       let a2: THREE.Vector3, b2: THREE.Vector3, c2: THREE.Vector3;
 
       if (alternate) {
-        // Diagonal from 01 to 10
-        a1 = p00; b1 = p10; c1 = p01;
-        a2 = p10; b2 = p11; c2 = p01;
+        // Diagonal from 01 to 10:
+        // Triangle 1: p00 -> p01 -> p10
+        a1 = p00; b1 = p01; c1 = p10;
+        // Triangle 2: p10 -> p01 -> p11
+        a2 = p10; b2 = p01; c2 = p11;
       } else {
-        // Diagonal from 00 to 11
-        a1 = p00; b1 = p10; c1 = p11;
-        a2 = p00; b2 = p11; c2 = p01;
+        // Diagonal from 00 to 11:
+        // Triangle 1: p00 -> p01 -> p11
+        a1 = p00; b1 = p01; c1 = p11;
+        // Triangle 2: p00 -> p11 -> p10
+        a2 = p00; b2 = p11; c2 = p10;
       }
 
-      // Compute face normal 1
+      // Compute face normal 1: edge1 = (b1 - a1), edge2 = (c1 - a1)
       const edge1 = new THREE.Vector3().subVectors(b1, a1);
       const edge2 = new THREE.Vector3().subVectors(c1, a1);
       const n1 = new THREE.Vector3().crossVectors(edge1, edge2).normalize();
 
-      // Compute face normal 2
+      // Compute face normal 2: edge3 = (b2 - a2), edge4 = (c2 - a2)
       const edge3 = new THREE.Vector3().subVectors(b2, a2);
       const edge4 = new THREE.Vector3().subVectors(c2, a2);
       const n2 = new THREE.Vector3().crossVectors(edge3, edge4).normalize();
 
-      const grey = 0.6;
+      const grey = 0.7;
 
       // Triangle 1
       for (const v of [a1, b1, c1]) {
