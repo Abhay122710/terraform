@@ -1,0 +1,23 @@
+[
+  {"lat": 40.0, "lon": -105.0, "elevation": 1500},
+  {"lat": 40.01, "lon": -105.0, "elevation": 1650},
+  {"lat": 40.02, "lon": -105.0, "elevation": 1800},
+  {"lat": 40.0, "lon": -104.99, "elevation": 1580},
+  {"lat": 40.01, "lon": -104.99, "elevation": 2100},
+  {"lat": 40.02, "lon": -104.99, "elevation": 2400},
+  {"lat": 40.0, "lon": -104.98, "elevation": 1620},
+  {"lat": 40.01, "lon": -104.98, "elevation": 2300},
+  {"lat": 40.02, "lon": -104.98, "elevation": 2800},
+  {"lat": 40.03, "lon": -105.0, "elevation": 1900},
+  {"lat": 40.03, "lon": -104.99, "elevation": 2500},
+  {"lat": 40.03, "lon": -104.98, "elevation": 3100},
+  {"lat": 40.04, "lon": -105.0, "elevation": 1700},
+  {"lat": 40.04, "lon": -104.99, "elevation": 2200},
+  {"lat": 40.04, "lon": -104.98, "elevation": 2600},
+  {"lat": 40.005, "lon": -104.995, "elevation": 1750},
+  {"lat": 40.015, "lon": -104.985, "elevation": 2500},
+  {"lat": 40.025, "lon": -104.995, "elevation": 2200},
+  {"lat": 40.035, "lon": -104.985, "elevation": 2900},
+  {"lat": 40.045, "lon": -104.995, "elevation": 1850}
+]
+
