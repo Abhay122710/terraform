@@ -1,0 +1,242 @@
+/**
+ * Terraform — Responsive Layout & Mobile Redesign.
+ * Solves Defect 3.2: Completely redesigned mobile responsiveness.
+ * Supports:
+ * - Desktop: 1440px+
+ * - Tablet: 768px–1024px
+ * - Phone Portrait: 390×844px (e.g. iPhone 12/13/14), 320px (compact)
+ * - Phone Landscape
+ */
+
+/* ─── Tablet & Small Desktops (≤ 1024px) ─── */
+@media screen and (max-width: 1024px) {
+  :root {
+    --sidebar-width: 320px;
+  }
+
+  #legend-container {
+    right: calc(var(--sidebar-width) + 16px);
+    bottom: 20px;
+  }
+
+  #generating-indicator {
+    right: calc(var(--sidebar-width) + 16px);
+  }
+}
+
+/* ─── Mobile Devices (≤ 768px): Bottom Sheet Architecture ─── */
+@media screen and (max-width: 768px) {
+  :root {
+    --sidebar-width: 100%;
+  }
+
+  /* 3D Viewport is 100% full screen */
+  #viewport {
+    width: 100vw;
+    height: 100vh;
+  }
+
+  /* Permanent sidebar is hidden and transformed into a Bottom Sheet */
+  #controls-panel {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-height: 75vh;
+    border-left: none;
+    border-top: 1px solid var(--border-subtle);
+    border-radius: 20px 20px 0 0;
+    transform: translateY(105%);
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 200;
+    box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.7);
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #controls-panel.mobile-open {
+    transform: translateY(0);
+  }
+
+  /* Show sheet drag handle & mobile close button */
+  #sheet-handle {
+    display: flex;
+  }
+
+  .panel-close-btn {
+    display: block;
+  }
+
+  /* Show floating mobile controls trigger button */
+  #mobile-controls-btn {
+    display: flex;
+  }
+
+  /* Reposition legend to avoid floating buttons */
+  #legend-container {
+    right: 16px;
+    bottom: 84px;
+    transform: scale(0.9);
+    transform-origin: bottom right;
+  }
+
+  /* Reposition generating indicator */
+  #generating-indicator {
+    right: 16px;
+    bottom: 84px;
+  }
+
+  /* Quick action buttons repositioned */
+  #quick-actions {
+    bottom: 20px;
+    left: 16px;
+    flex-wrap: wrap;
+    max-width: calc(100vw - 160px);
+  }
+
+  .quick-btn {
+    padding: 8px 12px;
+    min-height: 40px;
+  }
+
+  /* Hide interaction hint on small mobile to prevent UI clutter */
+  #interaction-hint {
+    display: none;
+  }
+
+  /* Header adjustments for mobile */
+  #brand-header {
+    top: 12px;
+    left: 16px;
+  }
+
+  .brand-title {
+    font-size: 15px;
+  }
+
+  #source-badge {
+    top: 54px;
+    left: 16px;
+    font-size: 10px;
+    padding: 4px 10px;
+  }
+
+  /* Touch-friendly inputs */
+  .btn {
+    min-height: 44px; /* Accessible 44px minimum touch target */
+    font-size: 13px;
+  }
+
+  select {
+    padding: 10px 12px;
+    font-size: 13px;
+    min-height: 44px;
+  }
+
+  input[type="number"] {
+    width: 68px;
+    padding: 8px;
+    font-size: 12px;
+    min-height: 38px;
+  }
+
+  input[type="range"] {
+    height: 6px;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* ─── Compact Phone Screens (≤ 390px, e.g. 390×844 & 320px) ─── */
+@media screen and (max-width: 390px) {
+  #brand-header {
+    top: 10px;
+    left: 12px;
+  }
+
+  .brand-title {
+    font-size: 14px;
+  }
+
+  .brand-subtitle {
+    display: none; /* Hide subtitle to keep header compact */
+  }
+
+  #source-badge {
+    top: 38px;
+    left: 12px;
+    max-width: calc(100vw - 24px);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  #quick-actions {
+    left: 12px;
+    bottom: 16px;
+    gap: 6px;
+  }
+
+  .quick-btn span {
+    display: none; /* Icon-only on very narrow mobile */
+  }
+
+  .quick-btn {
+    padding: 10px 14px;
+    min-width: 42px;
+    justify-content: center;
+  }
+
+  #mobile-controls-btn {
+    bottom: 16px;
+    right: 12px;
+    padding: 10px 16px;
+    font-size: 12px;
+  }
+
+  .btn-grid {
+    grid-template-columns: 1fr; /* Stack buttons vertically on small phones */
+  }
+
+  .control-section {
+    padding: 14px 16px;
+  }
+
+  .primary-controls-banner {
+    padding: 14px 16px;
+  }
+}
+
+/* ─── Mobile Landscape Orientation (max-height: 500px) ─── */
+@media screen and (max-height: 500px) and (orientation: landscape) {
+  #controls-panel {
+    max-height: 88vh;
+  }
+
+  #source-badge {
+    display: none;
+  }
+
+  #legend-container {
+    bottom: 12px;
+    right: 12px;
+    transform: scale(0.75);
+    transform-origin: bottom right;
+  }
+
+  #mobile-controls-btn {
+    bottom: 12px;
+    right: 12px;
+    padding: 8px 14px;
+    min-height: 38px;
+  }
+
+  #quick-actions {
+    bottom: 12px;
+    left: 12px;
+  }
+}

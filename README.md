@@ -1,141 +1,144 @@
-# 🏔️ Terraform
+# 🏔️ Terraform — Low-Poly 3D Terrain Generator
 
-A real-time, browser-based low-poly terrain generator built with **Vite**, **TypeScript**, and **Three.js** (WebGL). All compute-heavy generation and erosion runs in a dedicated **Web Worker** using zero-copy `ArrayBuffer` transfers to keep the main thread locked at 60 fps.
+A real-time, browser-based low-poly 3D terrain generator built with **HTML5**, **CSS3**, **Vanilla JavaScript (ES6+)**, and **Three.js**.
 
-![Terraform Screenshot](public/samples/heightmap.png)
+Live Reference: [https://terraform-zeta.vercel.app/](https://terraform-zeta.vercel.app/)
 
-## Features
+Zero framework dependencies (No React, Vue, Svelte, Tailwind, or TypeScript runtime). Deployable anywhere as a static website without a mandatory build or transpilation step.
+
+---
+
+## 🚀 Key Features
 
 ### 1. Data Inputs & File Formats
-- **Image Heightmap**: PNG, JPG, BMP, WebP — luminance (ITU-R BT.709) is converted to elevation.
-- **Scattered Points (CSV)**: Auto-detects `x,y,z` or `lat,lon,elevation` headers; interpolates onto the grid using **Inverse-Distance Weighting (IDW)**.
-- **Scattered Points (JSON)**: Array of `{x, y, z}` or `{lat, lon, elevation}` objects interpolated via IDW.
+- **Image Heightmaps**: PNG, JPG, BMP, WebP with luminance decoding (ITU-R BT.709), Invert mode, and Geographic Heatmaps (Rainbow, Turbo, Spectral).
+- **Scattered Points (CSV)**: Auto-detects `x,y,z` or `lat,lon,elevation`; interpolates onto a regular grid using **Inverse-Distance Weighting (IDW)**.
+- **Scattered Points (JSON)**: Array of `{x, y, z}` or `{lat, lon, elevation}` interpolated via IDW.
 - **ESRI ASCII Grid (.asc)**: Full header parsing (`ncols`, `nrows`, `cellsize`, `NODATA_value`).
-- **Procedural-Only**: Generate without any file upload.
-- **Data ↔ Noise Blend**: A continuous slider to mix real-world elevation data with procedural noise.
-- **Drag-and-Drop**: Drop files anywhere on the window, or click **Load File…** in the toolbar.
-- **Sample Files**: Bundled in `/public/samples/` (`heightmap.png`, `points.csv`, `points.json`).
+- **Procedural Generation**: 100% procedural generation without requiring file uploads.
+- **Data ↔ Noise Blending**: Seamless continuous blend between real elevation maps and procedural noise.
+- **Drag-and-Drop**: Drop files anywhere on the browser window or use the file picker.
+- **Bundled Samples**: Includes bundled mountain sample (`assets/sample-heightmap.png`, `assets/points.csv`, `assets/points.json`).
 
-### 2. Procedural Noise
-- **5 Algorithms**:
-  - **Simplex fBm**: Smooth, natural multi-octave rolling hills.
-  - **Perlin fBm**: Classic gradient noise fractal.
-  - **Ridged Multifractal**: Sharp, jagged mountain ridges (`1 - |noise|`).
-  - **Billow**: Billowy, soft cloud-like formations (`|noise|`).
-  - **Voronoi / Cellular**: Distance-to-nearest-feature cells for volcanic/crater formations.
-- **Fine Controls**: Seed, scale, octaves (1–10), lacunarity, persistence.
-- **Shape Modifiers**: Height scale, redistribution power exponent, plateau/terrace step quantizer.
+### 2. Procedural Noise Algorithms
+- **Simplex fBm**: Smooth, natural multi-octave rolling hills.
+- **Perlin fBm**: Classic gradient noise fractal.
+- **Ridged Multifractal**: Sharp, jagged alpine mountain ridges (`1 - |noise|`).
+- **Billow fBm**: Billowy, soft cloud-like formations (`|noise|`).
+- **Voronoi / Cellular**: Distance-to-nearest-feature cells for volcanic calderas and craters.
 
-### 3. Post-Processing & Erosion
-- **Smoothing Passes**: Box-blur iterations for gentle rolling hills.
-- **Hydraulic Erosion**: Particle-based droplet simulation with momentum, dissolution capacity, sediment transport, and deposition.
-- **Thermal Erosion**: Talus-angle redistribution for realistic scree slopes and cliffs.
+### 3. Mountain Shaping & Erosion Simulations
+- **Ridge Sharpening**: Exponent curve boosting summits into sharp alpine peaks.
+- **Valley Deepening**: Sigmoid flattening on lower elevations into lush meadows.
+- **Elevation Curve**: Power redistribution curve.
+- **Plateau / Terracing**: Quantized terrace stepping for mesas and canyons.
+- **Smoothing**: Box blur passes.
+- **Hydraulic Erosion**: Particle-based water drop simulation with momentum, sediment capacity, erosion, and deposition.
+- **Thermal Erosion**: Talus-angle material redistribution.
 
-### 4. Low-Poly Rendering & Shading
-- **Non-Indexed Geometry**: Every triangle has unique vertices and flat face normals for a crisp, faceted low-poly aesthetic.
-- **Mesh Resolution**: 16 to 256 segments (slider downsamples/upsamples on the fly).
-- **Vertex Jitter**: Subtle randomized displacement of interior vertices for an organic, hand-crafted look.
-- **Flat vs. Smooth Shading**: Toggle between faceted low-poly and smooth normals.
-- **Height-Band + Slope Shading**: Per-face coloring based on height bands (sand, grass, forest, rock, snow) with an adjustable **Steepness Threshold** that forces rock coloring on sheer cliffs.
-- **4 Palette Presets**:
-  - 🏔️ **Alpine** (Sand, Grass, Forest, Rock, Snow)
-  - 🏜️ **Desert** (Dunes, Sand, Dry Earth, Mesa, Peak)
-  - 🌋 **Volcanic** (Basalt, Ash, Lava Rock, Magma, Lava)
-  - ❄️ **Arctic** (Frozen Sea, Tundra, Ice, Glacier, Snow Peak)
-- **Translucent Water Plane**: Adjustable water level and opacity.
-- **Atmosphere & Sun**: Directional sunlight with azimuth, elevation, intensity sliders, soft PCF shadows, and distance fog.
-- **OrbitControls**: Smooth damping, auto-rotate toggle, and reset camera button.
+### 4. Shading, Themes & Inspection Views
+- **5 Physical Color Palettes**:
+  - *Mountain Reference (Default)*: Lowland grass green (`#789B45`), meadow (`#86A64E`), earthy brown (`#94744B`), rocky slopes (`#80634D`), rock grey (`#A3A09A`), summit stone (`#C4C0B6`).
+  - *Alpine High Country*: Granite scree and glacial snow.
+  - *Desert / Canyon*: Sandstone tiers and red rock cliffs.
+  - *Volcanic Caldera*: Basalt plains, ash, and molten ridges.
+  - *Arctic Tundra*: Tundra moss, permafrost, and glacial ice.
+- **Inspection Views**:
+  - *Shaded Realistic (PBR)*: Matte diffuse outdoor lighting with soft PCF shadows.
+  - *Slope Angle Heatmap*: Green (0° flat) → Yellow (30°) → Red (60° steep).
+  - *Elevation Heatmap*: Normalized height (Blue → Cyan → Green → Yellow → White).
+  - *Topographical Contours*: Real-time elevation isolines with configurable interval.
+  - *Low-Poly Wireframe*: Facet wireframe overlay.
+  - *Diagnostic Baseline*: Solid natural green for lighting calibration.
+- **Interactive Raycaster Hover Readout**: Real-time height, slope in degrees, and 3D world coordinates.
+- **Water Plane**: Toggleable valley water plane with adjustable elevation level and opacity.
 
-### 5. Analysis Views
-- **Shaded**: Full low-poly lighting and palette coloring.
-- **Slope Heatmap**: Color-coded by face steepness (Green 0° → Yellow 30° → Red 60°+).
-- **Height Heatmap**: Blue (low) → Cyan → Green → Yellow → White (high).
-- **Contour Lines**: Visual elevation contour intervals (adjustable spacing).
-- **Wireframe Overlay**: Dark faceted polygon outlines over shaded mesh.
-- **Interactive Readout**: Hovering over the terrain displays real-time normalized height, slope in degrees, and 3D world coordinates.
-- **Dynamic Legend**: Canvas-drawn gradient legend that updates with the active view.
-
-### 6. Export Options
-- **Screenshot (PNG)**: 1×, 2×, or 4× resolution with solid or transparent background (`terraform-<seed>.png`).
-- **Heightmap (PNG)**: Grayscale 8-bit heightfield image.
-- **Mesh (OBJ)**: Non-indexed OBJ file with vertex positions, normals, and face indices.
-- **Mesh (GLB)**: Binary glTF with embedded geometry and vertex colors.
-- **Settings (JSON)**: Save and restore all generator parameters.
-
-### 7. Keyboard Shortcuts
-- `R`: Randomize seed
-- `E`: Export PNG screenshot
-- `A`: Toggle auto-rotation
-- `Ctrl+Z` / `Ctrl+Y`: Undo / Redo parameter changes
+### 5. Downloads & Exports
+1. **Screenshot (PNG)**: 1× or 2× resolution, with optional transparent background.
+2. **Heightmap (PNG)**: Grayscale 8-bit elevation map [0..255].
+3. **Mesh (OBJ)**: Standard Wavefront OBJ format with vertices, normals, and triangle faces.
+4. **Mesh (GLB)**: Binary glTF 2.0 format compatible with Blender, three.js viewers, and 3D engines.
+5. **Save Preset (JSON)**: Complete configuration export (can be reloaded with **Load Preset**).
 
 ---
 
-## Getting Started
+## 🛠️ Technology Stack
 
-### Prerequisites
-- Node.js 18+
-- npm 9+
+1. **HTML5** — Semantic markup, accessible labels, ARIA landmarks, and focus management.
+2. **CSS3** — Custom modern dark theme, CSS Grid & Flexbox, responsive bottom sheet, smooth transitions.
+3. **Vanilla JavaScript (ES6+)** — Centralized state management, event orchestration, procedural math, and file loaders.
+4. **Three.js (r187)** — 3D scene graph, perspective camera, OrbitControls, PCF shadows, PBR standard materials, and GLTFExporter.
 
-### Install & Run
+---
+
+## 📱 Mobile Responsiveness Redesign
+
+- **Desktop (1440px+)**: Dominant 3D viewport with an organized sidebar on the right.
+- **Tablet (768px–1024px)**: Compact sidebar layout.
+- **Mobile (320px–480px, including 390×844px)**:
+  - Sidebar is replaced with a floating **⚙️ Controls** button.
+  - Opens as a responsive **Bottom Sheet** modal (touch drag-down handle, backdrop tap, or Escape key to dismiss).
+  - Minimum 44px touch targets.
+  - Zero horizontal overflow.
+  - Camera fitting automatically scales terrain to fit visible canvas on resize and on **Reset Camera**.
+
+---
+
+## 🐛 Resolved QA Defect Report
+
+| Issue | Root Cause | Solution Implemented |
+|---|---|---|
+| **3.1 Reset Default Desynchronization** | Competing state variables and UI controllers retaining previous numeric values. | Implemented single authoritative `state.js` object with full synchronization (`syncUIFromState`). Reset Default deterministically restores all opening default parameters and opening sample. |
+| **3.2 Mobile Responsiveness Defect** | 320px fixed sidebar covering 85% of mobile screen (390×844px). | Transformed sidebar into a mobile bottom sheet with floating trigger button and dynamic camera fitting. |
+| **4.1 Legend Label Alignment** | Legend labels placed beneath gradient canvas with loose spacing `<br>` tags. | Rebuilt legend into a flexbox card where top label aligns to top endpoint, mid label to vertical center, and bottom label to bottom endpoint, with explicit units (Degrees ° and Normalized Height). |
+| **4.2 Deprecated Shadow Map Warning** | Use of removed `THREE.PCFSoftShadowMap` in Three.js renderer configuration. | Replaced with supported `THREE.PCFShadowMap` and tuned shadow bias & normalBias. Zero console warnings remain. |
+
+---
+
+## 🏃 Getting Started & Local Development
+
+Run with any standard static HTTP server:
+
+### Option A: Python (Built-in)
 ```bash
-# Clone and enter directory
-git clone <repo-url>
-cd terraform
-
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
+python -m http.server 5173
 ```
+Then open [http://localhost:5173](http://localhost:5173) in your browser.
 
-Open [http://localhost:5173](http://localhost:5173) in your browser.
-
-### Run Tests
+### Option B: Node.js (npx serve)
 ```bash
-npm test
+npx serve .
 ```
 
-### Production Build
+---
+
+## 🧪 Automated Test Suite
+
+Run the end-to-end automated test suites:
 ```bash
-npm run build
-npm run preview
+# 1. State, Noise, Heightfield & Interpolation Unit Tests
+node tests/verify-engine.mjs
+
+# 2. Three.js Geometry, Materials & Export Verification
+node tests/verify-three.mjs
+
+# 3. Headless Chrome End-to-End CDP Test (DOM, Controls, Resets, Legends, Mobile 390x844)
+node tests/test-browser-cdp.mjs
 ```
 
 ---
 
-## Architecture & Pipeline
+## 🚢 Production Deployment to Vercel
 
-```
-[Input: File / Seed]
-        │
-        ▼
-[Web Worker: terrain.worker.ts]
-   ├── 1. Generate Noise (Simplex / Perlin / Ridged / Billow / Voronoi)
-   ├── 2. Resample & Blend Input Data (Float32Array)
-   ├── 3. Shape Modifiers (Redistribution, Plateau Steps)
-   ├── 4. Post-processing (Smoothing, Hydraulic, Thermal Erosion)
-   └── 5. Normalize [0, 1] (Zero-copy transfer via ArrayBuffer)
-        │
-        ▼
-[Main Thread: Three.js]
-   ├── 1. Build Non-Indexed BufferGeometry (lowpoly.ts)
-   ├── 2. Apply Per-Face Colours / Analysis Shading (terrain-colors.ts / analysis.ts)
-   ├── 3. Update Scene (Water, Lighting, Shadows, Fog)
-   └── 4. Render @ 60fps with OrbitControls & Hover Readout
-```
+Terraform is a zero-configuration static website. To deploy on Vercel:
+
+1. Push this repository to GitHub.
+2. In the Vercel Dashboard, click **Add New Project** and import the repository.
+3. Leave **Build Command** blank (or `None`).
+4. Set **Output Directory** to `.` (root directory).
+5. Click **Deploy**.
 
 ---
 
-## Tech Stack
-- **Vite 6** — Ultra-fast bundler with native Web Worker ESM support
-- **TypeScript 5** — Strict type safety across all interfaces
-- **Three.js (r187)** — WebGL rendering, PCF shadows, ACESFilmic tone mapping, GLTFExporter
-- **lil-gui** — Zero-dependency, lightweight parameter toolbar styled with a custom dark theme
-- **Vitest** — Unit testing for loaders, heightfield arithmetic, IDW interpolation, and slope math
-
----
-
-## License
+## 📄 License
 MIT
-

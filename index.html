@@ -2,13 +2,593 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Terraform — Low-Poly Terrain Generator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Terraform — Low-Poly 3D Terrain Generator</title>
+    <meta name="description" content="A real-time, browser-based low-poly 3D terrain generator built with HTML5, CSS3, Vanilla JavaScript, and Three.js." />
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏔️</text></svg>" />
+
+    <!-- CSS Design System -->
+    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="stylesheet" href="css/components.css" />
+    <link rel="stylesheet" href="css/responsive.css" />
+
+    <!-- W3C Standard Import Map for Three.js -->
+    <script type="importmap">
+    {
+      "imports": {
+        "three": "./vendor/three/three.module.js",
+        "three/addons/": "./vendor/three/addons/"
+      }
+    }
+    </script>
   </head>
   <body>
-    <div id="viewport"></div>
-    <div id="ui-root"></div>
-    <script type="module" src="/src/main.ts"></script>
+    <!-- 3D Canvas Viewport -->
+    <main id="viewport" aria-label="3D Terrain Canvas"></main>
+
+    <!-- Brand Header -->
+    <header id="brand-header">
+      <div class="brand-title">
+        <span class="brand-icon" aria-hidden="true">🏔️</span>
+        <span>Terraform</span>
+      </div>
+      <p class="brand-subtitle">Low-Poly 3D Terrain Generator</p>
+    </header>
+
+    <!-- Active Terrain Source Indicator Badge -->
+    <div id="source-badge" aria-live="polite">
+      <span class="badge-icon">📁</span>
+      <span class="badge-title">Sample heightmap</span>
+      <span class="badge-detail">mountain-sample.png</span>
+    </div>
+
+    <!-- Hover Readout (Elevation, Slope, Coordinates) -->
+    <div id="hover-readout" aria-live="off"></div>
+
+    <!-- Interaction Hint -->
+    <div id="interaction-hint">Drag to orbit • Scroll to zoom • Arrow keys navigate</div>
+
+    <!-- Quick Action Floating Buttons -->
+    <div id="quick-actions" role="toolbar" aria-label="Quick Viewport Actions">
+      <button id="quick-reset-camera" class="quick-btn" title="Reset Camera View (Home / C)" aria-label="Reset Camera View">
+        <span aria-hidden="true">📷</span> <span>Reset View</span>
+      </button>
+      <button id="quick-fit-terrain" class="quick-btn" title="Fit Terrain into Viewport" aria-label="Fit Terrain to Canvas">
+        <span aria-hidden="true">📐</span> <span>Fit</span>
+      </button>
+      <button id="quick-restore-sample" class="quick-btn" title="Restore Bundled Mountain Sample" aria-label="Restore Bundled Sample">
+        <span aria-hidden="true">🏔️</span> <span>Sample</span>
+      </button>
+    </div>
+
+    <!-- Analytical Legend (Height & Slope) -->
+    <aside id="legend-container" aria-label="Terrain Analysis Legend"></aside>
+
+    <!-- Generating Indicator -->
+    <div id="generating-indicator" role="status" aria-live="polite">
+      <div class="indicator-spinner"></div>
+      <span>Generating terrain…</span>
+    </div>
+
+    <!-- Mobile Floating Controls Trigger -->
+    <button id="mobile-controls-btn" aria-label="Open Controls Panel" aria-expanded="false" aria-controls="controls-panel">
+      <span aria-hidden="true">⚙️</span>
+      <span>Controls</span>
+    </button>
+
+    <!-- Mobile Bottom Sheet Backdrop -->
+    <div id="sheet-backdrop" aria-hidden="true"></div>
+
+    <!-- ─── Controls Sidebar & Mobile Bottom Sheet ─── -->
+    <aside id="controls-panel" role="region" aria-label="Terrain Generation Controls" tabindex="-1">
+      <!-- Touch Drag Handle for Mobile Bottom Sheet -->
+      <div id="sheet-handle" aria-hidden="true">
+        <div class="sheet-handle-bar"></div>
+      </div>
+
+      <!-- Panel Header -->
+      <div class="panel-header">
+        <div class="panel-title">
+          <span aria-hidden="true">⚙️</span>
+          <span>Terrain Controls</span>
+        </div>
+        <button id="close-panel-btn" class="panel-close-btn" aria-label="Close Controls Panel">✕</button>
+      </div>
+
+      <!-- Top Focus: Immediately Accessible Primary Controls -->
+      <div class="primary-controls-banner">
+        <div class="primary-banner-title">Primary Adjustments</div>
+
+        <!-- Mountain Height -->
+        <div class="control-row">
+          <div class="control-label-group">
+            <label for="range-mountain-height" class="control-label">Mountain Height</label>
+          </div>
+          <div class="control-input-group">
+            <input type="range" id="range-mountain-height" min="0.2" max="4.0" step="0.05" value="1.35" aria-label="Mountain Height Slider" />
+            <input type="number" id="num-mountain-height" min="0.2" max="4.0" step="0.05" value="1.35" aria-label="Mountain Height Value" />
+          </div>
+        </div>
+
+        <!-- Color Theme -->
+        <div class="control-row">
+          <div class="control-label-group">
+            <label for="input-palette" class="control-label">Color Theme</label>
+          </div>
+          <select id="input-palette" aria-label="Color Theme Selection"></select>
+        </div>
+
+        <!-- View Mode -->
+        <div class="control-row">
+          <div class="control-label-group">
+            <label for="input-view-mode" class="control-label">View Mode</label>
+          </div>
+          <select id="input-view-mode" aria-label="View Mode Selection">
+            <option value="shaded">Shaded Realistic (PBR)</option>
+            <option value="slope">Slope Angle Analysis</option>
+            <option value="height">Elevation Heatmap</option>
+            <option value="contour">Topographical Contours</option>
+            <option value="wireframe">Low-Poly Wireframe</option>
+            <option value="debug-green">Diagnostic Baseline</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Section: Input & Heightmap -->
+      <section class="control-section">
+        <summary>📁 Input & Heightmap</summary>
+        <div class="section-content">
+          <div class="btn-grid">
+            <button id="btn-upload-file" class="btn btn-primary" aria-label="Upload terrain data file">
+              <span>⬆️ Load File…</span>
+            </button>
+            <button id="btn-clear-file" class="btn" aria-label="Clear loaded map">
+              <span>✕ Clear Map</span>
+            </button>
+          </div>
+          <button id="btn-restore-sample" class="btn btn-full" aria-label="Restore bundled sample heightmap">
+            <span>🔄 Restore Sample</span>
+          </button>
+
+          <div class="control-row">
+            <div class="control-label-group">
+              <label for="input-elevation-mode" class="control-label">Map Decoding</label>
+            </div>
+            <select id="input-elevation-mode" aria-label="Elevation Map Decoding Mode">
+              <option value="luminance">Luminance (ITU-R BT.709)</option>
+              <option value="invert">Inverted Heightmap</option>
+              <option value="rainbow-heatmap">Rainbow Geographic Heatmap</option>
+              <option value="turbo-heatmap">Turbo Heatmap</option>
+              <option value="spectral">Spectral Heatmap</option>
+            </select>
+          </div>
+
+          <div class="toggle-row">
+            <label class="switch-label">
+              <input type="checkbox" id="check-normalize-bounds" class="switch-input" checked />
+              <span class="switch-slider"></span>
+              <span>Normalize Bounds</span>
+            </label>
+          </div>
+
+          <div class="control-row">
+            <div class="control-label-group">
+              <label for="range-blend-factor" class="control-label">Blend with Noise</label>
+            </div>
+            <div class="control-input-group">
+              <input type="range" id="range-blend-factor" min="0" max="1" step="0.01" value="0.0" />
+              <input type="number" id="num-blend-factor" min="0" max="1" step="0.01" value="0.0" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Mountain Structure -->
+      <section class="control-section">
+        <summary>🏔️ Mountain Structure</summary>
+        <div class="section-content">
+          <div class="control-row">
+            <div class="control-label-group">
+              <label for="range-ridge-sharpening" class="control-label">Ridge Sharpness</label>
+            </div>
+            <div class="control-input-group">
+              <input type="range" id="range-ridge-sharpening" min="0.8" max="2.5" step="0.05" value="1.2" />
+              <input type="number" id="num-ridge-sharpening" min="0.8" max="2.5" step="0.05" value="1.2" />
+            </div>
+          </div>
+
+          <div class="control-row">
+            <div class="control-label-group">
+              <label for="range-valley-deepening" class="control-label">Valley Flattening</label>
+            </div>
+            <div class="control-input-group">
+              <input type="range" id="range-valley-deepening" min="0.0" max="0.8" step="0.05" value="0.15" />
+              <input type="number" id="num-valley-deepening" min="0.0" max="0.8" step="0.05" value="0.15" />
+            </div>
+          </div>
+
+          <div class="toggle-row">
+            <label class="switch-label">
+              <input type="checkbox" id="check-enable-detail" class="switch-input" checked />
+              <span class="switch-slider"></span>
+              <span>Procedural Detail</span>
+            </label>
+          </div>
+
+          <div class="control-row">
+            <div class="control-label-group">
+              <label for="range-detail-strength" class="control-label">Detail Strength</label>
+            </div>
+            <div class="control-input-group">
+              <input type="range" id="range-detail-strength" min="0.0" max="0.3" step="0.01" value="0.08" />
+              <input type="number" id="num-detail-strength" min="0.0" max="0.3" step="0.01" value="0.08" />
+            </div>
+          </div>
+
+          <div class="control-row">
+            <div class="control-label-group">
+              <label for="range-elevation-curve" class="control-label">Elevation Curve</label>
+            </div>
+            <div class="control-input-group">
+              <input type="range" id="range-elevation-curve" min="0.2" max="3.5" step="0.05" value="1.1" />
+              <input type="number" id="num-elevation-curve" min="0.2" max="3.5" step="0.05" value="1.1" />
+            </div>
+          </div>
+
+          <div class="control-row">
+            <div class="control-label-group">
+              <label for="range-plateau-steps" class="control-label">Plateau / Terraces</label>
+            </div>
+            <div class="control-input-group">
+              <input type="range" id="range-plateau-steps" min="0" max="20" step="1" value="0" />
+              <input type="number" id="num-plateau-steps" min="0" max="20" step="1" value="0" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Procedural Noise -->
+      <section class="control-section">
+        <summary>🌊 Procedural Noise</summary>
+        <div class="section-content">
+          <div class="control-row">
+            <div class="control-label-group">
+              <label for="input-noise-type" class="control-label">Noise Algorithm</label>
+            </div>
+            <select id="input-noise-type">
+              <option value="ridged">Ridged Multifractal (Alpine)</option>
+              <option value="simplex">Simplex fBm (Smooth)</option>
+              <option value="perlin">Perlin fBm (Classic)</option>
+              <option value="billow">Billow (Rolling Hills)</option>
+              <option value="voronoi">Voronoi (Volcanic/Craters)</option>
+            </select>
+          </div>
+
+          <div class="control-row">
+            <div class="control-label-group">
+              <label for="range-seed" class="control-label">Seed</label>
+            </div>
+            <div class="control-input-group">
+              <input type="range" id="range-seed" min="0" max="99999" step="1" value="42" />
+              <input type="number" id="num-seed" min="0" max="99999" step="1" value="42" />
+            </div>
+          </div>
+          <button id="btn-randomize-seed" class="btn btn-full">
+            <span>🎲 Randomize Seed (R)</span>
+          </button>
+
+          <div class="control-row">
+            <div class="control-label-group">
+              <label for="range-noise-scale" class="control-label">Noise Scale</label>
+            </div>
+            <div class="control-input-group">
+              <input type="range" id="range-noise-scale" min="0.5" max="15" step="0.1" value="3.5" />
+              <input type="number" id="num-noise-scale" min="0.5" max="15" step="0.1" value="3.5" />
+            </div>
+          </div>
+
+          <div class="control-row">
+            <div class="control-label-group">
+              <label for="range-octaves" class="control-label">Octaves</label>
+            </div>
+            <div class="control-input-group">
+              <input type="range" id="range-octaves" min="1" max="10" step="1" value="7" />
+              <input type="number" id="num-octaves" min="1" max="10" step="1" value="7" />
+            </div>
+          </div>
+
+          <div class="control-row">
+            <div class="control-label-group">
+              <label for="range-lacunarity" class="control-label">Lacunarity</label>
+            </div>
+            <div class="control-input-group">
+              <input type="range" id="range-lacunarity" min="1.0" max="4.0" step="0.1" value="2.1" />
+              <input type="number" id="num-lacunarity" min="1.0" max="4.0" step="0.1" value="2.1" />
+            </div>
+          </div>
+
+          <div class="control-row">
+            <div class="control-label-group">
+              <label for="range-persistence" class="control-label">Persistence</label>
+            </div>
+            <div class="control-input-group">
+              <input type="range" id="range-persistence" min="0.1" max="1.0" step="0.02" value="0.52" />
+              <input type="number" id="num-persistence" min="0.1" max="1.0" step="0.02" value="0.52" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Mesh & Geometry -->
+      <section class="control-section">
+        <summary>🔺 Mesh & Geometry</summary>
+        <div class="section-content">
+          <div class="control-row">
+            <div class="control-label-group">
+              <label for="range-resolution" class="control-label">Resolution (N×N)</label>
+            </div>
+            <div class="control-input-group">
+              <input type="range" id="range-resolution" min="16" max="256" step="1" value="128" />
+              <input type="number" id="num-resolution" min="16" max="256" step="1" value="128" />
+            </div>
+          </div>
+
+          <div class="toggle-row">
+            <label class="switch-label">
+              <input type="checkbox" id="check-flat-shading" class="switch-input" checked />
+              <span class="switch-slider"></span>
+              <span>Low-Poly (Flat Shaded)</span>
+            </label>
+          </div>
+
+          <div class="control-row">
+            <div class="control-label-group">
+              <label for="range-jitter" class="control-label">Vertex Jitter</label>
+            </div>
+            <div class="control-input-group">
+              <input type="range" id="range-jitter" min="0" max="0.6" step="0.02" value="0.12" />
+              <input type="number" id="num-jitter" min="0" max="0.6" step="0.02" value="0.12" />
+            </div>
+          </div>
+
+          <div class="toggle-row">
+            <label class="switch-label">
+              <input type="checkbox" id="check-show-base" class="switch-input" checked />
+              <span class="switch-slider"></span>
+              <span>Solid Base Skirt</span>
+            </label>
+          </div>
+
+          <div class="control-row">
+            <div class="control-label-group">
+              <label for="range-steepness" class="control-label">Steep → Rock (°)</label>
+            </div>
+            <div class="control-input-group">
+              <input type="range" id="range-steepness" min="10" max="75" step="1" value="38" />
+              <input type="number" id="num-steepness" min="10" max="75" step="1" value="38" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Water & Sun Atmosphere -->
+      <section class="control-section">
+        <summary>☀️ Water & Atmosphere</summary>
+        <div class="section-content">
+          <div class="toggle-row">
+            <label class="switch-label">
+              <input type="checkbox" id="check-water-enabled" class="switch-input" />
+              <span class="switch-slider"></span>
+              <span>Valley Water Plane</span>
+            </label>
+          </div>
+
+          <div class="control-row">
+            <div class="control-label-group">
+              <label for="range-water-level" class="control-label">Water Level</label>
+            </div>
+            <div class="control-input-group">
+              <input type="range" id="range-water-level" min="0" max="1" step="0.01" value="0.08" />
+              <input type="number" id="num-water-level" min="0" max="1" step="0.01" value="0.08" />
+            </div>
+          </div>
+
+          <div class="control-row">
+            <div class="control-label-group">
+              <label for="range-water-opacity" class="control-label">Water Opacity</label>
+            </div>
+            <div class="control-input-group">
+              <input type="range" id="range-water-opacity" min="0" max="1" step="0.05" value="0.65" />
+              <input type="number" id="num-water-opacity" min="0" max="1" step="0.05" value="0.65" />
+            </div>
+          </div>
+
+          <div class="control-row">
+            <div class="control-label-group">
+              <label for="range-sun-azimuth" class="control-label">Sun Azimuth (°)</label>
+            </div>
+            <div class="control-input-group">
+              <input type="range" id="range-sun-azimuth" min="0" max="360" step="1" value="140" />
+              <input type="number" id="num-sun-azimuth" min="0" max="360" step="1" value="140" />
+            </div>
+          </div>
+
+          <div class="control-row">
+            <div class="control-label-group">
+              <label for="range-sun-elevation" class="control-label">Sun Elevation (°)</label>
+            </div>
+            <div class="control-input-group">
+              <input type="range" id="range-sun-elevation" min="5" max="90" step="1" value="48" />
+              <input type="number" id="num-sun-elevation" min="5" max="90" step="1" value="48" />
+            </div>
+          </div>
+
+          <div class="control-row">
+            <div class="control-label-group">
+              <label for="range-sun-intensity" class="control-label">Sun Intensity</label>
+            </div>
+            <div class="control-input-group">
+              <input type="range" id="range-sun-intensity" min="0.1" max="4.0" step="0.1" value="1.5" />
+              <input type="number" id="num-sun-intensity" min="0.1" max="4.0" step="0.1" value="1.5" />
+            </div>
+          </div>
+
+          <div class="toggle-row">
+            <label class="switch-label">
+              <input type="checkbox" id="check-shadow-enabled" class="switch-input" checked />
+              <span class="switch-slider"></span>
+              <span>Cast Shadows</span>
+            </label>
+          </div>
+
+          <div class="control-row">
+            <div class="control-label-group">
+              <label for="range-fog-density" class="control-label">Fog Density</label>
+            </div>
+            <div class="control-input-group">
+              <input type="range" id="range-fog-density" min="0" max="0.08" step="0.002" value="0.01" />
+              <input type="number" id="num-fog-density" min="0" max="0.08" step="0.002" value="0.01" />
+            </div>
+          </div>
+
+          <div class="toggle-row">
+            <label class="switch-label">
+              <input type="checkbox" id="check-auto-rotate" class="switch-input" />
+              <span class="switch-slider"></span>
+              <span>Auto Rotate Camera (A)</span>
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Advanced Erosion Simulation -->
+      <details class="control-section">
+        <summary>💧 Advanced Erosion Simulation</summary>
+        <div class="section-content">
+          <div class="control-row">
+            <div class="control-label-group">
+              <label for="range-smoothing-passes" class="control-label">Smoothing Passes</label>
+            </div>
+            <div class="control-input-group">
+              <input type="range" id="range-smoothing-passes" min="0" max="10" step="1" value="0" />
+              <input type="number" id="num-smoothing-passes" min="0" max="10" step="1" value="0" />
+            </div>
+          </div>
+
+          <div class="control-row">
+            <div class="control-label-group">
+              <label for="range-hydraulic-iterations" class="control-label">Hydraulic Drops</label>
+            </div>
+            <div class="control-input-group">
+              <input type="range" id="range-hydraulic-iterations" min="0" max="5000" step="100" value="200" />
+              <input type="number" id="num-hydraulic-iterations" min="0" max="5000" step="100" value="200" />
+            </div>
+          </div>
+
+          <div class="control-row">
+            <div class="control-label-group">
+              <label for="range-thermal-iterations" class="control-label">Thermal Talus</label>
+            </div>
+            <div class="control-input-group">
+              <input type="range" id="range-thermal-iterations" min="0" max="50" step="1" value="8" />
+              <input type="number" id="num-thermal-iterations" min="0" max="50" step="1" value="8" />
+            </div>
+          </div>
+
+          <div class="control-row">
+            <div class="control-label-group">
+              <label for="range-contour-interval" class="control-label">Contour Interval</label>
+            </div>
+            <div class="control-input-group">
+              <input type="range" id="range-contour-interval" min="0.02" max="0.3" step="0.01" value="0.1" />
+              <input type="number" id="num-contour-interval" min="0.02" max="0.3" step="0.01" value="0.1" />
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <!-- Section: Presets & Settings -->
+      <section class="control-section">
+        <summary>⚙️ Presets & Configuration</summary>
+        <div class="section-content">
+          <div class="control-row">
+            <div class="control-label-group">
+              <label for="input-preset-select" class="control-label">Curated Presets</label>
+            </div>
+            <select id="input-preset-select" aria-label="Curated Presets"></select>
+          </div>
+
+          <div class="btn-grid">
+            <button id="btn-save-preset" class="btn" aria-label="Save preset JSON">
+              <span>💾 Save Preset</span>
+            </button>
+            <button id="btn-load-preset" class="btn" aria-label="Load preset JSON">
+              <span>📂 Load Preset</span>
+            </button>
+          </div>
+
+          <button id="btn-reset-default" class="btn btn-danger btn-full" aria-label="Reset all parameters and terrain to default">
+            <span>🔄 Reset Default</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Section: Export Downloads -->
+      <section class="control-section">
+        <summary>💾 Export & Downloads</summary>
+        <div class="section-content">
+          <div class="control-row">
+            <div class="control-label-group">
+              <label for="input-export-scale" class="control-label">Export Resolution</label>
+            </div>
+            <select id="input-export-scale" data-type="number">
+              <option value="1">1× Standard (Screen resolution)</option>
+              <option value="2">2× High Resolution (Retina)</option>
+            </select>
+          </div>
+
+          <div class="toggle-row">
+            <label class="switch-label">
+              <input type="checkbox" id="check-export-transparent" class="switch-input" />
+              <span class="switch-slider"></span>
+              <span>Transparent Background</span>
+            </label>
+          </div>
+
+          <div class="btn-grid">
+            <button id="btn-export-png" class="btn btn-primary" aria-label="Export screenshot PNG">
+              <span>📸 Screenshot (PNG)</span>
+            </button>
+            <button id="btn-export-heightmap" class="btn" aria-label="Export heightmap PNG">
+              <span>🗺️ Heightmap (PNG)</span>
+            </button>
+          </div>
+
+          <div class="btn-grid">
+            <button id="btn-export-obj" class="btn" aria-label="Export mesh as OBJ">
+              <span>📦 Mesh (OBJ)</span>
+            </button>
+            <button id="btn-export-glb" class="btn" aria-label="Export mesh as GLB">
+              <span>📦 Mesh (GLB)</span>
+            </button>
+          </div>
+        </div>
+      </section>
+    </aside>
+
+    <!-- Hidden File Input for Data Upload -->
+    <input type="file" id="hidden-file-input" accept=".png,.jpg,.jpeg,.bmp,.webp,.csv,.json,.asc" style="display:none;" />
+
+    <!-- Drag & Drop Visual Overlay -->
+    <div id="dropzone-overlay" aria-hidden="true">
+      <div class="drop-card">
+        <div class="drop-icon">📁</div>
+        <div class="drop-title">Drop terrain elevation file here</div>
+        <div class="drop-formats">Supported: PNG, JPG, BMP, WebP, CSV, JSON, ASC</div>
+      </div>
+    </div>
+
+    <!-- Application Main Entry Script -->
+    <script type="module" src="js/app.js"></script>
   </body>
 </html>

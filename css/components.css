@@ -1,0 +1,499 @@
+/**
+ * Terraform — Component Styles.
+ * Controls Sidebar, Form Controls, Range Sliders, Buttons, and Legend System.
+ * Fixes Defect 4.1: Vertical alignment of Legend labels alongside gradient endpoints & center.
+ */
+
+/* ─── Controls Panel Sidebar ─── */
+#controls-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: var(--sidebar-width);
+  height: 100%;
+  background: var(--bg-surface);
+  border-left: 1px solid var(--border-subtle);
+  z-index: 100;
+  overflow-y: auto;
+  overflow-x: hidden;
+  backdrop-filter: blur(16px);
+  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Custom scrollbar */
+#controls-panel::-webkit-scrollbar {
+  width: 5px;
+}
+#controls-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+#controls-panel::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+}
+#controls-panel::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.panel-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  background: var(--bg-surface-elevated);
+  z-index: 10;
+}
+
+.panel-title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.panel-close-btn {
+  display: none; /* Visible only on mobile */
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+}
+
+/* ─── Primary Controls Banner (Top Focus) ─── */
+.primary-controls-banner {
+  background: rgba(74, 119, 232, 0.08);
+  border-bottom: 1px solid rgba(74, 119, 232, 0.2);
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.primary-banner-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--accent-primary-hover);
+}
+
+/* ─── Section Blocks ─── */
+.control-section {
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 16px 20px;
+}
+
+.control-section summary {
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  user-select: none;
+  padding: 4px 0;
+}
+
+.control-section summary::-webkit-details-marker {
+  display: none;
+}
+
+.section-content {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ─── Form Controls: Row Layout ─── */
+.control-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.control-label-group {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.control-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-main);
+}
+
+.control-input-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Range Slider */
+input[type="range"] {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  background: var(--bg-input);
+  border-radius: 2px;
+  outline: none;
+  border: 1px solid var(--border-subtle);
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  cursor: pointer;
+  transition: transform 0.1s, background-color 0.1s;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  background: var(--accent-primary-hover);
+}
+
+input[type="range"]:focus-visible {
+  outline: 2px solid var(--border-focus);
+}
+
+/* Number Inputs */
+input[type="number"] {
+  width: 60px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 4px 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-main);
+  text-align: right;
+  outline: none;
+}
+
+input[type="number"]:focus {
+  border-color: var(--border-focus);
+}
+
+/* Select Dropdown */
+select {
+  width: 100%;
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 7px 10px;
+  font-size: 12px;
+  color: var(--text-main);
+  outline: none;
+  cursor: pointer;
+}
+
+select:focus {
+  border-color: var(--border-focus);
+}
+
+/* Checkbox Toggle Switch */
+.toggle-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.switch-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 12px;
+}
+
+.switch-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.switch-slider {
+  position: relative;
+  display: inline-block;
+  width: 34px;
+  height: 18px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: 18px;
+  transition: background-color 0.2s;
+}
+
+.switch-slider::before {
+  content: "";
+  position: absolute;
+  height: 12px;
+  width: 12px;
+  left: 2px;
+  bottom: 2px;
+  background-color: var(--text-muted);
+  border-radius: 50%;
+  transition: transform 0.2s, background-color 0.2s;
+}
+
+.switch-input:checked + .switch-slider {
+  background-color: var(--accent-primary);
+  border-color: var(--accent-primary);
+}
+
+.switch-input:checked + .switch-slider::before {
+  transform: translateX(16px);
+  background-color: #ffffff;
+}
+
+.switch-input:focus-visible + .switch-slider {
+  outline: 2px solid var(--border-focus);
+}
+
+/* ─── Buttons ─── */
+.btn-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.btn-full {
+  width: 100%;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-surface-elevated);
+  color: var(--text-main);
+  transition: all 0.15s ease;
+  min-height: 34px;
+}
+
+.btn:hover {
+  background: rgba(45, 55, 80, 0.9);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn-primary {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: #ffffff;
+}
+
+.btn-primary:hover {
+  background: var(--accent-primary-hover);
+  border-color: var(--accent-primary-hover);
+}
+
+.btn-danger {
+  background: rgba(247, 85, 85, 0.15);
+  border-color: rgba(247, 85, 85, 0.3);
+  color: #ff8585;
+}
+
+.btn-danger:hover {
+  background: rgba(247, 85, 85, 0.25);
+}
+
+/* ─── Legend System (Fixes Defect 4.1) ─── */
+#legend-container {
+  position: fixed;
+  bottom: 24px;
+  right: calc(var(--sidebar-width) + 24px);
+  z-index: 20;
+  pointer-events: none;
+  display: none;
+}
+
+#legend-container.visible {
+  display: block;
+}
+
+.legend-card {
+  background: rgba(14, 18, 28, 0.92);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(12px);
+  min-width: 170px;
+}
+
+.legend-header {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10px;
+}
+
+.legend-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.legend-unit {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.legend-body {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+  height: 140px;
+}
+
+.legend-bar {
+  width: 18px;
+  height: 100%;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* Slope gradient: Green (0) -> Yellow (0.5) -> Red (1.0) */
+.slope-gradient {
+  background: linear-gradient(to top, #00ff00 0%, #ffff00 50%, #ff0000 100%);
+}
+
+/* Height gradient: Blue -> Cyan -> Green -> Yellow -> White */
+.height-gradient {
+  background: linear-gradient(to top, #0000aa 0%, #00aaff 25%, #00cc44 50%, #ffff00 75%, #ffffff 100%);
+}
+
+/* Contour pattern */
+.contour-pattern {
+  background: repeating-linear-gradient(
+    to top,
+    #222 0px,
+    #222 12px,
+    #fff 13px,
+    #222 14px
+  );
+}
+
+.legend-scale {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.scale-label {
+  display: flex;
+  align-items: center;
+  color: var(--text-secondary);
+}
+
+.scale-label.top {
+  align-self: flex-start;
+  color: #ff8585;
+}
+
+.scale-label.mid {
+  color: #ffdf70;
+}
+
+.scale-label.bottom {
+  align-self: flex-start;
+  color: #6ee7b7;
+}
+
+/* ─── Mobile Floating Controls Button ─── */
+#mobile-controls-btn {
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 50;
+  background: var(--accent-primary);
+  color: #ffffff;
+  border: none;
+  border-radius: 28px;
+  padding: 12px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+}
+
+#mobile-controls-btn:active {
+  background: var(--accent-primary-hover);
+}
+
+/* ─── Sheet Backdrop ─── */
+#sheet-backdrop {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 90;
+  backdrop-filter: blur(3px);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+#sheet-backdrop.visible {
+  display: block;
+  opacity: 1;
+}
+
+/* ─── Drag handle for mobile bottom sheet ─── */
+#sheet-handle {
+  display: none;
+  width: 100%;
+  padding: 10px 0 4px 0;
+  justify-content: center;
+  cursor: grab;
+}
+
+.sheet-handle-bar {
+  width: 44px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 3px;
+}

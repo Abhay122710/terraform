@@ -1,24 +1,12 @@
 {
   "name": "terraform",
+  "version": "2.0.0",
   "private": true,
-  "version": "1.0.0",
+  "description": "A real-time, browser-based low-poly 3D terrain generator built with HTML5, CSS3, Vanilla JavaScript, and Three.js.",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview",
-    "test": "vitest run",
-    "test:watch": "vitest"
-  },
-  "devDependencies": {
-    "@types/three": "^0.187.0",
-    "pngjs": "^7.0.0",
-    "typescript": "~7.0.2",
-    "vite": "^8.3.6",
-    "vitest": "^5.1.0"
-  },
-  "dependencies": {
-    "lil-gui": "^0.21.0",
-    "three": "^0.187.0"
+    "start": "python -m http.server 5173",
+    "serve": "npx serve .",
+    "test": "node tests/verify-engine.mjs && node tests/verify-three.mjs && node tests/test-browser-cdp.mjs"
   }
 }
