@@ -6,6 +6,8 @@ Live Reference: [https://terraform-zeta.vercel.app/](https://terraform-zeta.verc
 
 Zero framework dependencies (No React, Vue, Svelte, Tailwind, or TypeScript runtime). Deployable anywhere as a static website without a mandatory build or transpilation step.
 
+> 📖 **Project Architecture & Viva Defense Guide**: See [ARCHITECTURE.md](file:///d:/webgl%20project%20capstone/ARCHITECTURE.md) for the complete system architecture diagram, module-by-module breakdown, and capstone presentation Q&A cheatsheet!
+
 ---
 
 ## 🚀 Key Features
