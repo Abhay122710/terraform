@@ -1,7 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { loadASC } from '../src/loaders/asc-loader';
-import { loadCSV } from '../src/loaders/csv-loader';
-import { loadJSON } from '../src/loaders/json-loader';
+import { loadASC, loadCSV, loadJSON } from '../js/heightmap.js';
 
 describe('Loaders', () => {
   it('parses ESRI ASCII grid text', async () => {
@@ -67,4 +65,3 @@ NODATA_value -9999
     await expect(loadJSON(file, 4)).rejects.toThrow();
   });
 });
-

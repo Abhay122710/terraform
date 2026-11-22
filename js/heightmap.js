@@ -83,6 +83,18 @@ export class HeightField {
     return new HeightField(this.size, new Float32Array(this.data));
   }
 
+  downsample(targetSize) {
+    const result = new HeightField(targetSize);
+    for (let y = 0; y < targetSize; y++) {
+      for (let x = 0; x < targetSize; x++) {
+        const u = targetSize === 1 ? 0 : x / (targetSize - 1);
+        const v = targetSize === 1 ? 0 : y / (targetSize - 1);
+        result.set(x, y, this.sample(u, v));
+      }
+    }
+    return result;
+  }
+
   static fromFlat(data, width, height) {
     const size = Math.max(width, height);
     if (width === height) {

@@ -99,6 +99,14 @@ export function applyAnalysisColours(geometry, mode, maxY, contourInterval = 0.1
 }
 
 /**
+ * Compute face slope angle in degrees from normal vector.
+ */
+export function computeFaceSlope(normal) {
+  const angle = Math.acos(clamp(normal.dot(up), -1, 1));
+  return (angle * 180) / Math.PI;
+}
+
+/**
  * Get slope angle in degrees for a given face index.
  */
 export function getFaceSlope(geometry, faceIndex) {

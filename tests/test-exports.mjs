@@ -23,6 +23,7 @@ if (typeof FileReader === 'undefined') {
       blob.arrayBuffer().then((buf) => {
         this.result = buf;
         if (this.onload) this.onload();
+        if (this.onloadend) this.onloadend();
       });
     }
   };

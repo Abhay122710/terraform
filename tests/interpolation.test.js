@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { idwInterpolation, ScatteredPoint } from '../src/core/interpolation';
+import { idwInterpolation } from '../js/heightmap.js';
 
 describe('IDW Interpolation', () => {
   it('returns an empty grid for empty points', () => {
@@ -9,7 +9,7 @@ describe('IDW Interpolation', () => {
   });
 
   it('interpolates known values at exact point locations', () => {
-    const points: ScatteredPoint[] = [
+    const points = [
       { x: 0, y: 0, z: 0 },
       { x: 1, y: 0, z: 100 },
       { x: 0, y: 1, z: 50 },
@@ -30,11 +30,10 @@ describe('IDW Interpolation', () => {
   });
 
   it('handles single point gracefully', () => {
-    const points: ScatteredPoint[] = [{ x: 5, y: 5, z: 42 }];
+    const points = [{ x: 5, y: 5, z: 42 }];
     const grid = idwInterpolation(points, 4);
     expect(grid.length).toBe(16);
     // All values should be normalized to 0 (range is 0)
     expect(grid[0]).toBe(0);
   });
 });
-

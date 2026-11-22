@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import * as THREE from 'three';
-import { computeFaceSlope } from '../src/mesh/lowpoly';
+import { computeFaceSlope } from '../js/analysis.js';
 
 describe('Slope Calculation', () => {
   it('computes 0° for horizontal face (normal pointing straight up)', () => {
@@ -21,4 +21,3 @@ describe('Slope Calculation', () => {
     expect(slope).toBeCloseTo(45, 1);
   });
 });
-

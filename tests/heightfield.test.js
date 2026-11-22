@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { HeightField } from '../src/core/heightfield';
+import { HeightField } from '../js/heightmap.js';
 
 describe('HeightField', () => {
   it('creates an empty grid with correct dimensions', () => {

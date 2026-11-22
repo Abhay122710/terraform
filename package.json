@@ -11,6 +11,7 @@
     "start": "python -m http.server 5173",
     "serve": "npx serve .",
     "build": "node -e \"console.log('Static build ready')\"",
-    "test": "node tests/verify-engine.mjs && node tests/verify-three.mjs && node tests/test-browser-cdp.mjs"
+    "test": "node tests/verify-engine.mjs && node tests/verify-three.mjs && node tests/test-exports.mjs && vitest run",
+    "test:unit": "vitest run"
   }
 }
