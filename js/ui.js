@@ -221,6 +221,7 @@ export function setupUI(callbacks) {
     syncUIFromState,
     updateSourceIndicator,
     updateLegend,
+    updateAnalysisStats,
     openMobileSheet,
     closeMobileSheet,
   };
@@ -352,6 +353,23 @@ export function updateSourceIndicator(state) {
     <span class="badge-title">${title}</span>
     <span class="badge-detail">${detail}</span>
   `;
+}
+
+/**
+ * Update the 4 Terrain Analysis statistic cards (Min/Max/Avg Elevation & Avg Slope).
+ */
+export function updateAnalysisStats(stats) {
+  if (!stats) return;
+
+  const minEl = document.getElementById('stat-min-elevation');
+  const maxEl = document.getElementById('stat-max-elevation');
+  const avgEl = document.getElementById('stat-avg-elevation');
+  const slopeEl = document.getElementById('stat-avg-slope');
+
+  if (minEl) minEl.innerHTML = `${stats.minElevation.toFixed(3)}<span class="stat-unit">norm</span>`;
+  if (maxEl) maxEl.innerHTML = `${stats.maxElevation.toFixed(3)}<span class="stat-unit">norm</span>`;
+  if (avgEl) avgEl.innerHTML = `${stats.avgElevation.toFixed(3)}<span class="stat-unit">norm</span>`;
+  if (slopeEl) slopeEl.innerHTML = `${stats.avgSlope.toFixed(1)}<span class="stat-unit">°</span>`;
 }
 
 /**

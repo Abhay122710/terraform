@@ -59,6 +59,7 @@ This document is designed to help you understand, explain, and defend the **Terr
 │  • Analytical Inspection (js/analysis.js):                             │
 │    - Slope angle gradient (0° Green → 30° Yellow → 60° Red)            │
 │    - Elevation heatmap & Topographical contour isolines                │
+│    - Min/Max/Avg elevation & area-weighted Avg Slope cards             │
 │    - Real-time raycaster hover inspection for height/slope values      │
 └────────────────────────────────────┬───────────────────────────────────┘
                                      │

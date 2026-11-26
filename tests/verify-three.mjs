@@ -6,7 +6,8 @@ import * as THREE from 'three';
 import { HeightField } from '../js/heightmap.js';
 import { buildTerrainGeometry, buildTerrainBaseSkirt, createWaterMesh } from '../js/geometry.js';
 import { applyTerrainColours, createTerrainMaterial, createSkirtMaterial } from '../js/materials.js';
-import { applyAnalysisColours, getFaceSlope } from '../js/analysis.js';
+import { applyAnalysisColours, getFaceSlope, calculateTerrainStatistics } from '../js/analysis.js';
+import { TERRAIN_SIZE } from '../js/state.js';
 import { exportOBJ } from '../js/exports.js';
 
 let passed = 0;
@@ -136,6 +137,37 @@ console.log('\n=== TEST SUITE 10: WAVEFRONT OBJ GENERATION & VALIDATION ===');
   const fLines = lines.filter(l => l.startsWith('f '));
   assert(vLines.length === pos.count, `OBJ vertex count (${vLines.length}) matches mesh count (${pos.count})`);
   assert(fLines.length === pos.count / 3, `OBJ face count (${fLines.length}) matches triangle count (${pos.count / 3})`);
+}
+
+console.log('\n=== TEST SUITE 11: TERRAIN ANALYSIS STATISTICS (ELEVATION & SLOPE) ===');
+{
+  const size = 16;
+
+  // 1. Flat terrain at 0.5 elevation
+  const flatHf = new HeightField(size);
+  flatHf.data.fill(0.5);
+  const flatGeo = buildTerrainGeometry(flatHf, { segments: size, heightScale: 2.5, jitter: 0 });
+  const flatStats = calculateTerrainStatistics(flatHf, flatGeo);
+
+  assert(Math.abs(flatStats.minElevation - 0.5) < 1e-5, `Flat terrain min elevation is 0.5 (got ${flatStats.minElevation})`);
+  assert(Math.abs(flatStats.maxElevation - 0.5) < 1e-5, `Flat terrain max elevation is 0.5 (got ${flatStats.maxElevation})`);
+  assert(Math.abs(flatStats.avgElevation - 0.5) < 1e-5, `Flat terrain avg elevation is 0.5 (got ${flatStats.avgElevation})`);
+  assert(Math.abs(flatStats.avgSlope) < 1e-4, `Flat terrain average slope is 0.0° (got ${flatStats.avgSlope.toFixed(4)}°)`);
+
+  // 2. Exact 45-degree inclined plane (dx = TERRAIN_SIZE, dy = TERRAIN_SIZE)
+  const rampHf = new HeightField(size);
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      rampHf.set(x, y, x / (size - 1));
+    }
+  }
+  const rampGeo = buildTerrainGeometry(rampHf, { segments: size, heightScale: TERRAIN_SIZE, jitter: 0 });
+  const rampStats = calculateTerrainStatistics(rampHf, rampGeo);
+
+  assert(Math.abs(rampStats.minElevation - 0.0) < 1e-5, `Ramp min elevation is 0.0 (got ${rampStats.minElevation})`);
+  assert(Math.abs(rampStats.maxElevation - 1.0) < 1e-5, `Ramp max elevation is 1.0 (got ${rampStats.maxElevation})`);
+  assert(Math.abs(rampStats.avgElevation - 0.5) < 1e-5, `Ramp avg elevation is 0.5 (got ${rampStats.avgElevation})`);
+  assert(Math.abs(rampStats.avgSlope - 45.0) < 0.05, `45° ramp reports ~45.0° average slope (got ${rampStats.avgSlope.toFixed(2)}°)`);
 }
 
 console.log(`\n========================================`);

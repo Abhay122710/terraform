@@ -26,7 +26,7 @@ import {
   createSkirtMaterial,
   disposeMesh,
 } from './materials.js';
-import { applyAnalysisColours, setupRaycasterHover } from './analysis.js';
+import { applyAnalysisColours, calculateTerrainStatistics, setupRaycasterHover } from './analysis.js';
 import { generateTerrainHeightfield } from './terrain.js';
 import { loadTerrainFile } from './heightmap.js';
 import {
@@ -273,6 +273,10 @@ function rebuildMesh() {
 
   updateWater();
   uiHandlers.updateLegend(state.viewMode);
+
+  // Update Terrain Analysis statistics (terrain mesh only, excluding water & base skirt)
+  const stats = calculateTerrainStatistics(currentHeightfield, geometry);
+  uiHandlers.updateAnalysisStats(stats);
 }
 
 /**

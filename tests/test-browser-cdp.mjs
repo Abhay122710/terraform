@@ -112,6 +112,25 @@ async function run() {
     });
     console.log('Active source badge text:', checkBadge.result.value);
 
+    // Verify Terrain Analysis Statistic Cards (Min, Max, Avg Elevation & Avg Slope)
+    console.log('\n--- VERIFYING TERRAIN ANALYSIS CARDS ---');
+    const statMin = await send('Runtime.evaluate', {
+      expression: 'document.getElementById("stat-min-elevation")?.textContent',
+    });
+    const statMax = await send('Runtime.evaluate', {
+      expression: 'document.getElementById("stat-max-elevation")?.textContent',
+    });
+    const statAvg = await send('Runtime.evaluate', {
+      expression: 'document.getElementById("stat-avg-elevation")?.textContent',
+    });
+    const statSlopeInitial = await send('Runtime.evaluate', {
+      expression: 'document.getElementById("stat-avg-slope")?.textContent',
+    });
+    console.log('Min Elevation card:', statMin.result.value);
+    console.log('Max Elevation card:', statMax.result.value);
+    console.log('Avg Elevation card:', statAvg.result.value);
+    console.log('Avg Slope card (initial 1.35):', statSlopeInitial.result.value);
+
     // Test Defect 3.1: Change Mountain Height to 0.4, then click Reset Default
     console.log('\n--- VERIFYING DEFECT 3.1: RESET DEFAULT BEHAVIOR ---');
     await send('Runtime.evaluate', {
@@ -121,6 +140,12 @@ async function run() {
         input.dispatchEvent(new Event("input", { bubbles: true }));
       `,
     });
+    await new Promise((r) => setTimeout(r, 300));
+
+    const statSlopeLower = await send('Runtime.evaluate', {
+      expression: 'document.getElementById("stat-avg-slope")?.textContent',
+    });
+    console.log('Avg Slope card after Mountain Height = 0.4:', statSlopeLower.result.value);
 
     const valAfterChange = await send('Runtime.evaluate', {
       expression: 'document.getElementById("num-mountain-height").value',
@@ -139,11 +164,15 @@ async function run() {
     const sliderAfterReset = await send('Runtime.evaluate', {
       expression: 'document.getElementById("range-mountain-height").value',
     });
+    const statSlopeReset = await send('Runtime.evaluate', {
+      expression: 'document.getElementById("stat-avg-slope")?.textContent',
+    });
     console.log('Mountain Height number input after Reset Default:', valAfterReset.result.value);
     console.log('Mountain Height slider input after Reset Default:', sliderAfterReset.result.value);
+    console.log('Avg Slope card after Reset Default:', statSlopeReset.result.value);
 
-    const resetSuccess = valAfterReset.result.value === '1.35' && sliderAfterReset.result.value === '1.35';
-    console.log('Reset Default restored exact original 1.35:', resetSuccess ? 'PASS ✓' : 'FAIL ✗');
+    const resetSuccess = valAfterReset.result.value === '1.35' && sliderAfterReset.result.value === '1.35' && statSlopeReset.result.value === statSlopeInitial.result.value;
+    console.log('Reset Default restored exact original 1.35 and analysis slope:', resetSuccess ? 'PASS ✓' : 'FAIL ✗');
 
     // Test Defect 3.2: Mobile Responsiveness at 390x844
     console.log('\n--- VERIFYING DEFECT 3.2: MOBILE RESPONSIVENESS AT 390×844 ---');

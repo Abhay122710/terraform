@@ -479,7 +479,15 @@ const isContourLine = mod < 0.008 || mod > contourInterval - 0.008;
 // If true, paints a crisp white isoline onto the vertex buffer
 ```
 
-#### 4. Real-Time Raycaster Hover Readout:
+#### 4. Terrain Analysis Statistics (`calculateTerrainStatistics`):
+Computes Minimum Elevation, Maximum Elevation, Arithmetic Mean Elevation from `HeightField`, and Area-Weighted Average Slope in degrees from valid terrain triangle faces (excluding water and base skirt):
+```javascript
+// js/analysis.js
+const stats = calculateTerrainStatistics(currentHeightfield, geometry);
+// Returns { minElevation, maxElevation, avgElevation, avgSlope }
+```
+
+#### 5. Real-Time Raycaster Hover Readout:
 Casts a ray from mouse coordinates through the camera into the 3D scene. Intersects the terrain mesh to display live **World $(X, Y, Z)$**, **Normalized Height**, and **Slope Angle in Degrees (°)** in the bottom-right HUD.
 
 ---

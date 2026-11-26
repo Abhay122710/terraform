@@ -55,6 +55,7 @@ Zero framework dependencies (No React, Vue, Svelte, Tailwind, or TypeScript runt
   - *Low-Poly Wireframe*: Facet wireframe overlay.
   - *Diagnostic Baseline*: Solid natural green for lighting calibration.
 - **Interactive Raycaster Hover Readout**: Real-time height, slope in degrees, and 3D world coordinates.
+- **Terrain Analysis Dashboard**: Automatically calculates and displays **Min Elevation**, **Max Elevation**, **Avg Elevation** (normalized height), and area-weighted **Avg Terrain Slope (°)** across terrain surface faces whenever geometry updates.
 - **Water Plane**: Toggleable valley water plane with adjustable elevation level and opacity.
 
 ### 5. Downloads & Exports

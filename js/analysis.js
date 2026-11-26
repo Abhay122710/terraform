@@ -15,6 +15,11 @@ import { clamp } from './utils.js';
 const up = new THREE.Vector3(0, 1, 0);
 const tmpNormal = new THREE.Vector3();
 const tmpColor = new THREE.Color();
+const tmpV1 = new THREE.Vector3();
+const tmpV2 = new THREE.Vector3();
+const tmpV3 = new THREE.Vector3();
+const tmpEdge1 = new THREE.Vector3();
+const tmpEdge2 = new THREE.Vector3();
 
 /**
  * Apply analytical vertex colors.
@@ -104,6 +109,78 @@ export function applyAnalysisColours(geometry, mode, maxY, contourInterval = 0.1
 export function computeFaceSlope(normal) {
   const angle = Math.acos(clamp(normal.dot(up), -1, 1));
   return (angle * 180) / Math.PI;
+}
+
+/**
+ * Calculate minimum, maximum, arithmetic average elevation (normalized [0, 1]),
+ * and area-weighted average slope in degrees from valid terrain faces only
+ * (excludes water plane and base skirt geometry).
+ */
+export function calculateTerrainStatistics(heightfield, terrainGeometry) {
+  let minElevation = Infinity;
+  let maxElevation = -Infinity;
+  let totalElevation = 0;
+  let validSamples = 0;
+
+  if (heightfield && heightfield.data && heightfield.data.length > 0) {
+    const data = heightfield.data;
+    for (let i = 0; i < data.length; i++) {
+      const val = data[i];
+      if (!Number.isFinite(val)) continue;
+      if (val < minElevation) minElevation = val;
+      if (val > maxElevation) maxElevation = val;
+      totalElevation += val;
+      validSamples++;
+    }
+  }
+
+  const avgElevation = validSamples > 0 ? totalElevation / validSamples : 0;
+  if (validSamples === 0) {
+    minElevation = 0;
+    maxElevation = 0;
+  }
+
+  let totalArea = 0;
+  let weightedSlopeSum = 0;
+
+  if (terrainGeometry) {
+    const posAttr = terrainGeometry.getAttribute('position');
+    if (posAttr && posAttr.count >= 3) {
+      const triangleCount = Math.floor(posAttr.count / 3);
+      for (let i = 0; i < triangleCount; i++) {
+        const idx = i * 3;
+        tmpV1.fromBufferAttribute(posAttr, idx);
+        tmpV2.fromBufferAttribute(posAttr, idx + 1);
+        tmpV3.fromBufferAttribute(posAttr, idx + 2);
+
+        tmpEdge1.subVectors(tmpV2, tmpV1);
+        tmpEdge2.subVectors(tmpV3, tmpV1);
+
+        // Cross product length equals 2 * triangle area
+        tmpNormal.crossVectors(tmpEdge1, tmpEdge2);
+        const doubleArea = tmpNormal.length();
+
+        if (doubleArea > 1e-8) {
+          tmpNormal.divideScalar(doubleArea);
+          // Ensure normal points into upper hemisphere before computing slope angle
+          if (tmpNormal.y < 0) tmpNormal.negate();
+          const slopeDeg = computeFaceSlope(tmpNormal);
+          const area = doubleArea * 0.5;
+          weightedSlopeSum += slopeDeg * area;
+          totalArea += area;
+        }
+      }
+    }
+  }
+
+  const avgSlope = totalArea > 0 ? weightedSlopeSum / totalArea : 0;
+
+  return {
+    minElevation,
+    maxElevation,
+    avgElevation,
+    avgSlope,
+  };
 }
 
 /**

@@ -134,6 +134,31 @@
         </div>
       </div>
 
+      <!-- Section: Terrain Analysis -->
+      <section class="control-section" id="terrain-analysis-section" aria-label="Terrain Analysis Statistics">
+        <summary>📊 Terrain Analysis</summary>
+        <div class="section-content">
+          <div class="analysis-grid">
+            <div class="stat-card" title="Lowest normalized height sample in the generated terrain [0.000 – 1.000]">
+              <span class="stat-label">Min Elevation</span>
+              <span class="stat-value" id="stat-min-elevation">0.000<span class="stat-unit">norm</span></span>
+            </div>
+            <div class="stat-card" title="Highest normalized height sample in the generated terrain [0.000 – 1.000]">
+              <span class="stat-label">Max Elevation</span>
+              <span class="stat-value" id="stat-max-elevation">1.000<span class="stat-unit">norm</span></span>
+            </div>
+            <div class="stat-card" title="Arithmetic mean of all valid terrain elevation samples">
+              <span class="stat-label">Avg Elevation</span>
+              <span class="stat-value" id="stat-avg-elevation">0.000<span class="stat-unit">norm</span></span>
+            </div>
+            <div class="stat-card" title="Area-weighted average slope angle across terrain surface triangles">
+              <span class="stat-label">Avg Slope</span>
+              <span class="stat-value" id="stat-avg-slope">0.0<span class="stat-unit">°</span></span>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- Section: Input & Heightmap -->
       <section class="control-section">
         <summary>📁 Input & Heightmap</summary>

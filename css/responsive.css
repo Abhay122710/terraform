@@ -209,6 +209,25 @@
   .primary-controls-banner {
     padding: 14px 16px;
   }
+
+  .analysis-grid {
+    gap: 6px;
+  }
+
+  .stat-card {
+    padding: 8px 10px;
+  }
+
+  .stat-value {
+    font-size: 13px;
+  }
+}
+
+/* Stack analysis cards on ultra-narrow screens (≤ 340px) */
+@media screen and (max-width: 340px) {
+  .analysis-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ─── Mobile Landscape Orientation (max-height: 500px) ─── */
